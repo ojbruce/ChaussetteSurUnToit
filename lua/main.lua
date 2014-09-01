@@ -1,3 +1,6 @@
+require "lib/postshader"
+require "lib/light"
+
 function love.load()
   -- Set up window
   Width, Height = 800, 600
@@ -11,7 +14,7 @@ function love.load()
   World = love.physics.newWorld(0, 1250, true)
 
   -- Here we go, Box2D verbosity \o/
-  Roof = {}
+  Roof         = {}
   Roof.image   = love.graphics.newImage('assets/roof.png');
   Roof.body    = love.physics.newBody(World, Width / 2, Height + (Roof.image:getHeight() / 2) - 144)
   Roof.shape   = love.physics.newRectangleShape(Roof.image:getWidth(), Roof.image:getHeight())
@@ -41,10 +44,21 @@ function love.load()
   right.body    = love.physics.newBody(World, Width, 0)
   right.shape   = love.physics.newRectangleShape(0, Height*2)
   right.fixture = love.physics.newFixture(right.body, right.shape)
+
+  -- create light world
+  Light = love.light.newWorld()
+  Light.setAmbientColor(50, 160, 100)
+
+  -- create light
+  SocketLight = Light.newLight(0, 0, 255, 50, 63)
+  SocketLight.setGlowStrength(0.05)
 end
 
 function love.update(dt)
   World:update(dt)
+
+  Light.update()
+  SocketLight.setPosition(Socket.body:getX(), Socket.body:getY())
 
   -- Get current velocity
   local velocityX, velocityY = Socket.body:getLinearVelocity()
@@ -66,4 +80,9 @@ function love.draw()
   love.graphics.draw(Roof.image, Roof.body:getX(), Roof.body:getY(), Roof.body:getAngle(),  1, 1, Roof.image:getWidth() / 2, Roof.image:getHeight() / 2)
   love.graphics.draw(Fire.image, Fire.body:getX(), Fire.body:getY(), Fire.body:getAngle(),  1, 1, Fire.image:getWidth() / 2, Fire.image:getHeight() / 2)
   love.graphics.draw(Socket.image, Socket.body:getX(), Socket.body:getY(), Socket.body:getAngle(),  1, 1, Socket.image:getWidth() / 2, Socket.image:getHeight() / 2)
+
+   -- draw lightmap shadows
+   Light.drawShadow()
+   -- draw lightmap shine
+   Light.drawShine()
 end
